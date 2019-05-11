@@ -1,0 +1,94 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  ModelsBucketName:
+    Type: String
+    Description: Bucket for players to upload models
+  LogBucketName:
+    Type: String
+    Description: Existing bucket that stores logs
+
+Outputs:
+  QueueARN:
+    Description: ARN of SQS Queue
+    Value:
+      Fn::GetAtt:
+      - ModelUpdatesSQSQueue
+      - Arn
+  QueueURL:
+    Description: URL of SQS Queue
+    Value:
+      Ref: ModelUpdatesSQSQueue
+
+Resources:
+  ModelsS3Bucket:
+    Type: AWS::S3::Bucket
+    DependsOn: ModelUpdatesSQSQueuePolicy
+    Properties:
+      BucketName:
+        Ref: ModelsBucketName
+      LifecycleConfiguration:
+        Rules:
+        - ExpirationInDays: 7
+          Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName:
+          Ref: LogBucketName
+        LogFilePrefix:
+          Fn::Join:
+          - ''
+          - - s3/
+            - Ref: ModelsBucketName
+            - "/"
+      NotificationConfiguration:
+        QueueConfigurations:
+        - Queue:
+            Fn::GetAtt:
+            - ModelUpdatesSQSQueue
+            - Arn
+          Event: s3:ObjectCreated:*
+
+  ModelUpdatesSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: 'true'
+      ContentBasedDeduplication: 'true'
+      MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+          - ModelUpdatesSQSDeadLetterQueue
+          - Arn
+        maxReceiveCount: 3
+
+  ModelUpdatesSQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+      - Ref: ModelUpdatesSQSQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - sqs:SendMessage
+          Principal:
+            Service: s3.amazonaws.com
+          Resource:
+            Fn::GetAtt:
+            - ModelUpdatesSQSQueue
+            - Arn
+          Condition:
+            ArnLike:
+              aws:SourceArn:
+                Fn::Join:
+                - ''
+                - - 'arn:aws:s3:::'
+                  - Ref: ModelsBucketName
+
+  ModelUpdatesSQSDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: 'true'
+      ContentBasedDeduplication: 'true'
+      MessageRetentionPeriod: 1209600
