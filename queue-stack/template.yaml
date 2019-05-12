@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  queue-up
+  
+  Sample SAM Template for queue-up
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 5
+
+Resources:
+  QueueUpFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: bin/
+      Handler: queue-up
+      Runtime: go1.x
+      Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
+      Events:
+        PutObject:
+          Type: S3
+          Properties:
+            Bucket: !Ref SrcS3Bucket
+            Events: s3:ObjectCreated:*
+
+  SrcS3Bucket:
+    Type: AWS::S3::Bucket
+    DependsOn: ModelUpdatesSQSQueuePolicy
+    Properties:
+      BucketName: sample-models-bucket
+      LifecycleConfiguration:
+        Rules:
+        - ExpirationInDays: 7
+          Status: Enabled
+      NotificationConfiguration:
+        QueueConfigurations:
+        - Queue:
+            Fn::GetAtt:
+            - ModelUpdatesSQSQueue
+            - Arn
+          Event: s3:ObjectCreated:*
+
+  ModelUpdatesSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: 'true'
+      ContentBasedDeduplication: 'true'
+      MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+          - ModelUpdatesSQSDeadLetterQueue
+          - Arn
+        maxReceiveCount: 3
+
+  ModelUpdatesSQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+      - Ref: ModelUpdatesSQSQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - sqs:SendMessage
+          Principal:
+            Service: s3.amazonaws.com
+          Resource:
+            Fn::GetAtt:
+            - ModelUpdatesSQSQueue
+            - Arn
+          Condition:
+            ArnLike:
+              aws:SourceArn:
+                Fn::Join:
+                - ''
+                - - 'arn:aws:s3:::'
+                  - Ref: ModelsBucketName
+
+  ModelUpdatesSQSDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: 'true'
+      ContentBasedDeduplication: 'true'
+      MessageRetentionPeriod: 1209600
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  QueueUpFunction:
+    Description: "First Lambda Function ARN"
+    Value: !GetAtt QueueUpFunction.Arn
+  QueueUpFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt QueueUpFunctionRole.Arn
