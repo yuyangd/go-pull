@@ -1,3 +1,0 @@
-#!/bin/bash -eu
-
-aws cloudformation create-stack --stack-name racer-models --template-body file://deploy/stack.yml --parameters ParameterKey=ModelsBucketName,ParameterValue=racing-models ParameterKey=LogBucketName,ParameterValue=finx-logs-dev
