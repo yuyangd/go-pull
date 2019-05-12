@@ -9,7 +9,7 @@ Globals:
 Resources:
   QueueUpFunction:
     Type: AWS::Serverless::Function
-    DependsOn: ModelUpdatesSQSQueuePolicy
+    # DependsOn: ModelUpdatesSQSQueuePolicy
     Properties:
       CodeUri: bin/
       Handler: queue-up
@@ -30,13 +30,10 @@ Resources:
         Rules:
         - ExpirationInDays: 7
           Status: Enabled
-      NotificationConfiguration:
-        QueueConfigurations:
-        - Queue:
-            Fn::GetAtt:
-            - ModelUpdatesSQSQueue
-            - Arn
-          Event: s3:ObjectCreated:*
+      # NotificationConfiguration:
+      #   LambdaConfigurations:
+      #   - Function: !GetAtt QueueUpFunction.Arn
+      #     Event: s3:ObjectCreated:*
 
   ModelUpdatesSQSQueue:
     Type: AWS::SQS::Queue
@@ -51,30 +48,30 @@ Resources:
           - Arn
         maxReceiveCount: 3
 
-  ModelUpdatesSQSQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-      - Ref: ModelUpdatesSQSQueue
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Action:
-          - sqs:SendMessage
-          Principal:
-            Service: s3.amazonaws.com
-          Resource:
-            Fn::GetAtt:
-            - ModelUpdatesSQSQueue
-            - Arn
-          Condition:
-            ArnLike:
-              aws:SourceArn:
-                Fn::Join:
-                - ''
-                - - 'arn:aws:s3:::'
-                  - Ref: ModelsBucketName
+  # ModelUpdatesSQSQueuePolicy:
+  #   Type: AWS::SQS::QueuePolicy
+  #   Properties:
+  #     Queues:
+  #     - Ref: ModelUpdatesSQSQueue
+  #     PolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #       - Effect: Allow
+  #         Action:
+  #         - sqs:SendMessage
+  #         Principal:
+  #           Service: s3.amazonaws.com
+  #         Resource:
+  #           Fn::GetAtt:
+  #           - ModelUpdatesSQSQueue
+  #           - Arn
+  #         Condition:
+  #           ArnLike:
+  #             aws:SourceArn:
+  #               Fn::Join:
+  #               - ''
+  #               - - 'arn:aws:s3:::'
+  #                 - Ref: ModelsBucketName
 
   ModelUpdatesSQSDeadLetterQueue:
     Type: AWS::SQS::Queue
