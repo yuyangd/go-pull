@@ -27,10 +27,14 @@ func getService() *sqs.SQS {
 	return sqs.New(sess)
 }
 
-func sendMessage(svc *sqs.SQS, key *string, t time.Time) {
+func sendMessage(svc *sqs.SQS, key *string, bucket *string, t time.Time) {
 	result, err := svc.SendMessage(&sqs.SendMessageInput{
 		MessageGroupId: aws.String("models"),
 		MessageAttributes: map[string]*sqs.MessageAttributeValue{
+			"Bucket": &sqs.MessageAttributeValue{
+				DataType:    aws.String("String"),
+				StringValue: bucket,
+			},
 			"Key": &sqs.MessageAttributeValue{
 				DataType:    aws.String("String"),
 				StringValue: key,
@@ -49,7 +53,7 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 	for _, record := range s3Event.Records {
 		s3 := record.S3
 		log.Printf("[%s - %s] Bucket = %s, Key = %s \n", record.EventSource, record.EventTime, s3.Bucket.Name, s3.Object.Key)
-		sendMessage(getService(), aws.String(s3.Object.Key), record.EventTime)
+		sendMessage(getService(), aws.String(s3.Object.Key), aws.String(s3.Bucket.Name), record.EventTime)
 	}
 }
 
