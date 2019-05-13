@@ -87,3 +87,13 @@ Outputs:
   QueueUpFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt QueueUpFunctionRole.Arn
+  QueueARN:
+    Description: ARN of SQS Queue
+    Value:
+      Fn::GetAtt:
+      - ModelUpdatesSQSQueue
+      - Arn
+  QueueURL:
+    Description: URL of SQS Queue
+    Value:
+      Ref: ModelUpdatesSQSQueue
