@@ -9,12 +9,26 @@ Globals:
 Resources:
   QueueUpFunction:
     Type: AWS::Serverless::Function
-    # DependsOn: ModelUpdatesSQSQueuePolicy
+    DependsOn: ModelUpdatesSQSQueue
     Properties:
       CodeUri: bin/
       Handler: queue-up
       Runtime: go1.x
       Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
+      Environment:
+        Variables:
+          SQS_URL: !Ref ModelUpdatesSQSQueue
+      Policies:
+      - AWSLambdaExecute # Managed Policy
+      - Version: '2012-10-17' # Policy Document
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource:
+              Fn::GetAtt:
+                - ModelUpdatesSQSQueue
+                - Arn
       Events:
         PutObject:
           Type: S3
@@ -30,10 +44,6 @@ Resources:
         Rules:
         - ExpirationInDays: 7
           Status: Enabled
-      # NotificationConfiguration:
-      #   LambdaConfigurations:
-      #   - Function: !GetAtt QueueUpFunction.Arn
-      #     Event: s3:ObjectCreated:*
 
   ModelUpdatesSQSQueue:
     Type: AWS::SQS::Queue
@@ -47,31 +57,6 @@ Resources:
           - ModelUpdatesSQSDeadLetterQueue
           - Arn
         maxReceiveCount: 3
-
-  # ModelUpdatesSQSQueuePolicy:
-  #   Type: AWS::SQS::QueuePolicy
-  #   Properties:
-  #     Queues:
-  #     - Ref: ModelUpdatesSQSQueue
-  #     PolicyDocument:
-  #       Version: '2012-10-17'
-  #       Statement:
-  #       - Effect: Allow
-  #         Action:
-  #         - sqs:SendMessage
-  #         Principal:
-  #           Service: s3.amazonaws.com
-  #         Resource:
-  #           Fn::GetAtt:
-  #           - ModelUpdatesSQSQueue
-  #           - Arn
-  #         Condition:
-  #           ArnLike:
-  #             aws:SourceArn:
-  #               Fn::Join:
-  #               - ''
-  #               - - 'arn:aws:s3:::'
-  #                 - Ref: ModelsBucketName
 
   ModelUpdatesSQSDeadLetterQueue:
     Type: AWS::SQS::Queue
