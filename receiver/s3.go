@@ -19,6 +19,7 @@ type S3Handler struct {
 type S3Iface interface {
 	ListObjects(*s3.ListObjectsInput) (*s3.ListObjectsOutput, error)
 	DeleteObject(*s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error)
+	GetObject(*s3.GetObjectInput) (*s3.GetObjectOutput, error)
 }
 
 // S3Client creates a client from session
@@ -44,7 +45,7 @@ func (h *S3Handler) ListObjects() {
 }
 
 // DeleteObject from non-versioned bucket
-func (h *S3Handler) DeleteObject(bucket *string, key *string) {
+func (h *S3Handler) DeleteObject(bucket *string, key *string) (err error) {
 	input := &s3.DeleteObjectInput{
 		Bucket: bucket,
 		Key:    key,
@@ -59,6 +60,33 @@ func (h *S3Handler) DeleteObject(bucket *string, key *string) {
 		} else {
 			log.Println(err.Error())
 		}
+		return
 	}
 	log.Println(result)
+	return nil
+}
+
+// GetObject downloads the object
+func (h *S3Handler) GetObject(bucket *string, key *string) (err error) {
+	input := &s3.GetObjectInput{
+		Bucket: bucket,
+		Key:    key,
+	}
+	result, err := h.Service.GetObject(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchKey:
+				log.Println(s3.ErrCodeNoSuchKey, aerr.Error())
+			default:
+				log.Println(aerr.Error())
+			}
+		} else {
+			log.Println(err.Error())
+		}
+		return
+	}
+
+	log.Println(result)
+	return nil
 }
