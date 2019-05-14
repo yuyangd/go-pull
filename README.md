@@ -1,28 +1,38 @@
 # go-pull
 
-queue-stack:
+## queue-stack
 
 - SQS FIFO queue
 - Source s3 bucket
-- Lambda function that put object event to FIFO queue
+- Lambda function that put object message to FIFO queue
 
-go-pull cmd:
+## go-pull CLI Usage
 
-Command to pull from FIFO queue
+```bash
+go-pull ls # Inspect the s3 bucket
+
+go-pull get # Download the object based on the FIFO queue
+```
 
 ## Sample config
 
-$HOME/.go-pull.yaml
+Generate the Config
+
+```bash
+go-pull config --stack-name `STACK_NAME` > $HOME/.go-pull.yaml
+```
+
+Inspect the config
 
 ```yaml
 ---
 SQS_URL: "https://sqs.ap-southeast-2.amazonaws.com/<aws-account-id>/test-fifo-queue-ModelUpdatesSQSQueue-13LVZGQ6PGZTS.fifo"
+SOURCE_BUCKET: "<bucket name>"
 ```
 
-Or set environment variable
+Or environment variable
 
 ```bash
 export SQS_URL="https://sqs.ap-southeast-2.amazonaws.com/<aws-account-id>/test-fifo-queue-ModelUpdatesSQSQueue-13LVZGQ6PGZTS.fifo"
+export SOURCE_BUCKET="<bucket name>"
 ```
-
-## Usage
