@@ -28,8 +28,14 @@ var getCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("get the next object in the queue")
 		// Receive bucket and key from the Queue message
+		// Delete the message
 
-		//
+		// Download the object
+		// if download failed due to object not exists
+		// -> re-request another message from the Queue
+		
+		// Delete the object
+
 	},
 }
 
