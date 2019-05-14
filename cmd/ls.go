@@ -17,7 +17,9 @@ package cmd
 import (
 	"log"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/spf13/cobra"
+	"github.com/yuyangd/go-pull/receiver"
 )
 
 // lsCmd represents the ls command
@@ -27,6 +29,11 @@ var lsCmd = &cobra.Command{
 	Example: `go-pull ls`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("Listing objects in the source bucket")
+		s3 := receiver.S3Client()
+		(&receiver.S3Handler{
+			BucketName: aws.String(BucketName),
+			Service:    s3,
+		}).ListObjects()
 	},
 }
 

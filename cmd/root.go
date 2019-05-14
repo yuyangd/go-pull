@@ -23,7 +23,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile    string
+	BucketName string
+	SQSURL     string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -86,4 +90,8 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+
+	// Set variables
+	SQSURL = viper.GetString("SQS_URL")
+	BucketName = viper.GetString("SOURCE_BUCKET")
 }
