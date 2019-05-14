@@ -2,7 +2,9 @@ package receiver
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
@@ -16,6 +18,7 @@ type S3Handler struct {
 // S3Iface defines AWS s3 APIs
 type S3Iface interface {
 	ListObjects(*s3.ListObjectsInput) (*s3.ListObjectsOutput, error)
+	DeleteObject(*s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error)
 }
 
 // S3Client creates a client from session
@@ -38,4 +41,24 @@ func (h *S3Handler) ListObjects() {
 	for _, key := range resp.Contents {
 		fmt.Println(*key.Key)
 	}
+}
+
+// DeleteObject from non-versioned bucket
+func (h *S3Handler) DeleteObject(bucket *string, key *string) {
+	input := &s3.DeleteObjectInput{
+		Bucket: bucket,
+		Key:    key,
+	}
+	result, err := h.Service.DeleteObject(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				log.Println(aerr.Error())
+			}
+		} else {
+			log.Println(err.Error())
+		}
+	}
+	log.Println(result)
 }
