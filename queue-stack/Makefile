@@ -1,5 +1,7 @@
 .PHONY: deps clean build
 
+STACK?=test-fifo-queue
+
 deps:
 	go get -u ./...
 
@@ -13,4 +15,4 @@ pkg:
 	aws cloudformation package --template-file template.yaml --output-template-file packaged.yaml --s3-bucket finx-lambda-dev
 
 ship:
-	aws cloudformation deploy --template-file packaged.yaml --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --stack-name test-fifo-queue --tags expires=2019-05-15
+	aws cloudformation deploy --template-file packaged.yaml --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --stack-name $(STACK) --tags expires=2019-05-30
