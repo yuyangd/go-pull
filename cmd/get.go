@@ -18,6 +18,7 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/yuyangd/go-pull/receiver"
 )
 
 // getCmd represents the get command
@@ -26,16 +27,36 @@ var getCmd = &cobra.Command{
 	Short:   "get the next object in the queue",
 	Example: `go-pull get`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("get the next object in the queue")
+		log.Println("Get the next object in the queue")
+		sqs := receiver.SqsClient()
+		s3 := receiver.S3Client()
+		qh := &receiver.SQSHandler{
+			SQSURL:  &SQSURL,
+			Service: sqs,
+		}
+		result, err := qh.ReceiveMessage()
+
+		if err != nil {
+			log.Println("Error receiving the message")
+		}
 		// Receive bucket and key from the Queue message
+		keyP := result.Messages[0].MessageAttributes["Key"].StringValue
+		bucketP := result.Messages[0].MessageAttributes["Bucket"].StringValue
+
 		// Delete the message
+		qh.DeleteMessage(result)
 
 		// Download the object
 		// if download failed due to object not exists
 		// -> re-request another message from the Queue
-		
-		// Delete the object
+		sh := &receiver.S3Handler{
+			BucketName: bucketP,
+			Service:    s3,
+		}
+		sh.GetObject(keyP)
 
+		// Delete the object
+		sh.DeleteObject(keyP)
 	},
 }
 
