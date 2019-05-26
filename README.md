@@ -28,7 +28,7 @@ go-pull get # Download the object based on the FIFO queue
 Generate the config $HOME/.go-pull.yaml
 
 ```bash
-make url # Get SQS URL
+make url -e STACK=<stack name> # Get SQS URL
 ```
 
 ```yaml
