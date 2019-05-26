@@ -6,7 +6,16 @@
 - Source s3 bucket
 - Lambda function that put object message to FIFO queue
 
+Provision the queue stack
+
+```bash
+cd queue-stack
+make provision -e STACK=<stack name> -e LAMBDA_BUCKET=<bucket name>
+```
+
 ## go-pull CLI Usage
+
+Download the binary from release
 
 ```bash
 go-pull ls # Inspect the s3 bucket
@@ -16,13 +25,11 @@ go-pull get # Download the object based on the FIFO queue
 
 ## Sample config
 
-Generate the Config
+Generate the config $HOME/.go-pull.yaml
 
 ```bash
-go-pull config --stack-name `STACK_NAME` > $HOME/.go-pull.yaml
+make url # Get SQS URL
 ```
-
-Inspect the config
 
 ```yaml
 ---
