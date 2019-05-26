@@ -13,17 +13,7 @@ cd queue-stack
 make provision -e STACK=<stack name> -e LAMBDA_BUCKET=<bucket name>
 ```
 
-## go-pull CLI Usage
-
-Download the binary from release
-
-```bash
-go-pull ls # Inspect the s3 bucket
-
-go-pull get # Download the object based on the FIFO queue
-```
-
-## Sample config
+## Set Config
 
 Generate the config $HOME/.go-pull.yaml
 
@@ -42,4 +32,14 @@ Or environment variable
 ```bash
 export SQS_URL="https://sqs.ap-southeast-2.amazonaws.com/<aws-account-id>/test-fifo-queue-ModelUpdatesSQSQueue-13LVZGQ6PGZTS.fifo"
 export SOURCE_BUCKET="<bucket name>"
+```
+
+## go-pull CLI Usage
+
+Download the binary from release
+
+```bash
+go-pull ls # Inspect the s3 bucket
+
+go-pull get # Download the object based on the FIFO queue
 ```
