@@ -1,17 +1,15 @@
 # go-pull
 
-## queue-stack
-
-- SQS FIFO queue
-- Source s3 bucket
-- Lambda function that put object message to FIFO queue
-
-Provision the queue stack
+## Provision Queue stack
 
 ```bash
 cd queue-stack
 make provision -e STACK=<stack name> -e LAMBDA_BUCKET=<bucket name>
 ```
+
+- SQS FIFO queue
+- Source s3 bucket
+- Lambda function that put object message to FIFO queue
 
 ## Set Config
 
