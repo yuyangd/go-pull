@@ -49,19 +49,16 @@ func (h *SQSHandler) ReceiveMessage() (*sqs.ReceiveMessageOutput, error) {
 	}
 
 	if len(result.Messages) == 0 {
-		return nil, errors.New("Received no messages")
+		return nil, errors.New("no message in queue")
 	}
 
 	return result, nil
-	// Use the message attributes to get the object
-	// fmt.Println("Message Key", *(result.Messages[0].MessageAttributes["Key"].StringValue))
-	// fmt.Println("Message Bucket", *(result.Messages[0].MessageAttributes["Bucket"].StringValue))
 }
 
 // DeleteMessage delete message from FIFO queue
 func (h *SQSHandler) DeleteMessage(result *sqs.ReceiveMessageOutput) {
 	// Delete the message
-	resultDelete, err := h.Service.DeleteMessage(&sqs.DeleteMessageInput{
+	_, err := h.Service.DeleteMessage(&sqs.DeleteMessageInput{
 		QueueUrl:      h.SQSURL,
 		ReceiptHandle: result.Messages[0].ReceiptHandle,
 	})
@@ -70,6 +67,4 @@ func (h *SQSHandler) DeleteMessage(result *sqs.ReceiveMessageOutput) {
 		log.Println("Delete Error", err)
 		return
 	}
-
-	log.Println("Message Deleted", *resultDelete)
 }
