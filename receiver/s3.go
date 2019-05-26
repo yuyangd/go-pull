@@ -45,9 +45,9 @@ func (h *S3Handler) ListObjects() {
 }
 
 // DeleteObject from non-versioned bucket
-func (h *S3Handler) DeleteObject(bucket *string, key *string) (err error) {
+func (h *S3Handler) DeleteObject(key *string) (err error) {
 	input := &s3.DeleteObjectInput{
-		Bucket: bucket,
+		Bucket: h.BucketName,
 		Key:    key,
 	}
 	result, err := h.Service.DeleteObject(input)
@@ -67,9 +67,9 @@ func (h *S3Handler) DeleteObject(bucket *string, key *string) (err error) {
 }
 
 // GetObject downloads the object
-func (h *S3Handler) GetObject(bucket *string, key *string) (err error) {
+func (h *S3Handler) GetObject(key *string) (err error) {
 	input := &s3.GetObjectInput{
-		Bucket: bucket,
+		Bucket: h.BucketName,
 		Key:    key,
 	}
 	result, err := h.Service.GetObject(input)
