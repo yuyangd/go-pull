@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"log"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/yuyangd/go-pull/receiver"
@@ -37,7 +38,8 @@ var getCmd = &cobra.Command{
 		result, err := qh.ReceiveMessage()
 
 		if err != nil {
-			log.Println("Error receiving the message")
+			log.Printf("Error receiving the message: %v", err)
+			os.Exit(0)
 		}
 		// Receive bucket and key from the Queue message
 		keyP := result.Messages[0].MessageAttributes["Key"].StringValue
@@ -53,8 +55,11 @@ var getCmd = &cobra.Command{
 			BucketName: bucketP,
 			Service:    s3,
 		}
-		sh.GetObject(keyP)
-
+		err = sh.GetObject(keyP)
+		if err != nil {
+			log.Printf("Failed to download the object: %v", err)
+			os.Exit(0)
+		}
 		// Delete the object
 		sh.DeleteObject(keyP)
 	},
