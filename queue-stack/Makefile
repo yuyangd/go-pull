@@ -18,4 +18,4 @@ pkg:
 	aws cloudformation package --template-file template.yaml --output-template-file packaged.yaml --s3-bucket $(LAMBDA_BUCKET)
 
 ship:
-	aws cloudformation deploy --template-file packaged.yaml --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --stack-name $(STACK) --tags expires=2019-05-30
+	aws cloudformation deploy --template-file packaged.yaml --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --stack-name $(STACK) --tags expires=2019-06-01
