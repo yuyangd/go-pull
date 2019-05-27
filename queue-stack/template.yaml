@@ -39,7 +39,7 @@ Resources:
   SrcS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: sample-models-bucket
+      BucketName: deepracer-custom-models
       LifecycleConfiguration:
         Rules:
         - ExpirationInDays: 7
